@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('api/', include('hr.urls')),
     path('api/', include('volunteers.urls')),
+    path('api/', include('volunteers.urls')),  # ✅ Added volunteers app URLs
 ]

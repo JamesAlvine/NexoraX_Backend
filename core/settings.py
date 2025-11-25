@@ -1,30 +1,31 @@
 # backend/core/settings.py
 from pathlib import Path
-from decouple import config  # Keep this — it's safe and clean
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-nexorax-dev-key')
-DEBUG = config('DEBUG', default=True, cast=bool)
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-nexorax-dev-secret-key-change-in-production'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# ✅ Use custom User model
+# Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
 INSTALLED_APPS = [
+    'accounts',  # ✅ MUST be first
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Third-party
     'corsheaders',
     'rest_framework',
-    # Local apps — MODULAR
-    'accounts',      # ✅ Auth, User, Login
-    'hr',            # ✅ Staff, Leave
-    'volunteers',    # ✅ Volunteer profiles
+    'hr',
+    'volunteers',
 ]
 
 MIDDLEWARE = [
@@ -67,7 +68,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
 ]
 
-# 🌍 AFRICAN TIMEZONE (as you originally had)
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
@@ -75,16 +75,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Security (OWASP)
+# 🔒 SECURITY (Critical for Session Persistence)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
-SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = False  # Required for Angular
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
 
-# CORS
+# ✅ SESSION & CSRF (DEV SETTINGS)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False        # ✅ False in dev (HTTP)
+SESSION_COOKIE_SAMESITE = 'Lax'      # ✅ Allows cookie on cross-origin POST
+
+CSRF_COOKIE_HTTPONLY = False         # ✅ Required for Angular to read it
+CSRF_COOKIE_SECURE = False           # ✅ False in dev
+CSRF_COOKIE_SAMESITE = 'Lax'         # ✅ Must match session
+
+# CORS (Angular dev server)
 CORS_ALLOWED_ORIGINS = ['http://localhost:4200']
 CORS_ALLOW_CREDENTIALS = True
 
