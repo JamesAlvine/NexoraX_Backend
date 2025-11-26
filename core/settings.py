@@ -1,21 +1,26 @@
 # backend/core/settings.py
+import os
 from pathlib import Path
 
+# ✅ MUST be the very first line after imports
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nexorax-dev-secret-key-change-in-production'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-nexorax-dev-secret-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
+# Application definition
 INSTALLED_APPS = [
-    'accounts',  # ✅ MUST be first
+    'accounts',          # ✅ MUST be first (custom User model)
+    'hr',
+    'volunteers',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,8 +29,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'hr',
-    'volunteers',
 ]
 
 MIDDLEWARE = [
@@ -57,40 +60,46 @@ TEMPLATES = [{
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # ✅ Now safe — BASE_DIR is defined above
     }
 }
 
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
 ]
 
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 
-# 🔒 SECURITY (Critical for Session Persistence)
+# Security (OWASP)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# ✅ SESSION & CSRF (DEV SETTINGS)
+# Session & CSRF (DEVELOPMENT SETTINGS)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False        # ✅ False in dev (HTTP)
-SESSION_COOKIE_SAMESITE = 'Lax'      # ✅ Allows cookie on cross-origin POST
+SESSION_COOKIE_SAMESITE = 'Lax'
 
-CSRF_COOKIE_HTTPONLY = False         # ✅ Required for Angular to read it
+CSRF_COOKIE_HTTPONLY = False         # ✅ Required for Angular to read via JS
 CSRF_COOKIE_SECURE = False           # ✅ False in dev
-CSRF_COOKIE_SAMESITE = 'Lax'         # ✅ Must match session
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # CORS (Angular dev server)
-CORS_ALLOWED_ORIGINS = ['http://localhost:4200']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework
@@ -101,4 +110,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+}
+
+# Optional: Logging (for debugging 403/CSRF issues)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+    },
 }
