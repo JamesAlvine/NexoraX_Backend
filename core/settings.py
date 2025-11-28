@@ -1,22 +1,24 @@
 # backend/core/settings.py
-from pathlib import Path
 import os
+from pathlib import Path
+from decouple import config  # pip install python-decouple
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-nexorax-dev-secret-key-change-in-production')
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# SECURITY: Load from .env (never hardcode in production)
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-prod')
+DEBUG = config('DEBUG', default=True, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
-# ✅ Custom user model
+# Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
-# ✅ CRM app MUST be in INSTALLED_APPS
+# Application definition
 INSTALLED_APPS = [
     'accounts',
     'hr',
     'volunteers',
-    'crm',  # ← THIS WAS MISSING
+    'crm',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,16 +42,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
+# ✅ REQUIRED for Django Admin (fixes your error)
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [],
-    'APP_DIRS': True,
+    'APP_DIRS': True,  # ✅ Critical for Admin
     'OPTIONS': {
         'context_processors': [
             'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
+            'django.template.context_processors.request',  # ✅ Required
+            'django.contrib.auth.context_processors.auth',  # ✅ Required
+            'django.contrib.messages.context_processors.messages',  # ✅ Required
         ],
     },
 }]
@@ -63,6 +66,7 @@ DATABASES = {
     }
 }
 
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
 ]
@@ -74,28 +78,39 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Security (OWASP)
+# 🔒 OWASP Top 10 Security
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
-# ✅ Session & CSRF (DEV)
+# 🍪 Sessions & CSRF (DEV safe)
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False  # ✅ Required for Angular to read token
+CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# ✅ CORS
-CORS_ALLOWED_ORIGINS = ['http://localhost:4200']
+# 🌐 CORS (Angular dev server)
+CORS_ALLOWED_ORIGINS = ['http://localhost:4200'] if DEBUG else ['https://your-ngo.org']
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'authorization',
+    'content-type',
+    'x-csrftoken',
+]
+CORS_EXPOSE_HEADERS = ['set-cookie']
 
-# ✅ REST Framework
+# 📡 REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Secure, no JWT
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

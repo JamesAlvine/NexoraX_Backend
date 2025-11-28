@@ -1,12 +1,12 @@
+# backend/core/urls.py
 from django.contrib import admin
-from django.urls import path, include  # ✅ Added include import
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('accounts.urls')),
     path('api/', include('hr.urls')),
-    path('api/', include('volunteers.urls')),  # ✅ Added volunteers app URLs
+    path('api/', include('volunteers.urls')),
     path('api/', include('crm.urls')),
-    path('api/', include('crm.urls')),  # Added crm app URLs
     
 ]

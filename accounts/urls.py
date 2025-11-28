@@ -1,10 +1,10 @@
-# backend/accounts/urls.py
 from django.urls import path
-from .views import csrf, LoginView, UserListView, OrganizationView
+from .views import csrf, LoginView, MeView, UserListView, OrganizationView
 
 urlpatterns = [
-    path('auth/csrf/', csrf),
-    path('auth/login/', LoginView.as_view()),
-    path('super/users/', UserListView.as_view()),    
-    path('super/organization/', OrganizationView.as_view()),
+    path('auth/csrf/', csrf, name='csrf'),
+    path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/me/', MeView.as_view(), name='me'),
+    path('super/users/', UserListView.as_view(), name='user_list'),
+    path('super/organization/', OrganizationView.as_view(), name='organization'),
 ]

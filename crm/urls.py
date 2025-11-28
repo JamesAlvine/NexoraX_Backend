@@ -1,8 +1,7 @@
 # backend/crm/urls.py
 from django.urls import path
-from .views import DonorListView, BeneficiaryListView
+from .views import CrmDashboardView  # ✅ Now importable
 
 urlpatterns = [
-    path('donors/', DonorListView.as_view()),
-    path('beneficiaries/', BeneficiaryListView.as_view()),
+    path('dashboard/', CrmDashboardView.as_view(), name='crm_dashboard'),
 ]
