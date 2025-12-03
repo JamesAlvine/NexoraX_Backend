@@ -5,7 +5,7 @@ from decouple import config  # pip install python-decouple
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY: Load from .env (never hardcode in production)
+# SECURITY: Load from .env
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-prod')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
@@ -42,17 +42,16 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
-# ✅ REQUIRED for Django Admin (fixes your error)
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [],
-    'APP_DIRS': True,  # ✅ Critical for Admin
+    'APP_DIRS': True,
     'OPTIONS': {
         'context_processors': [
             'django.template.context_processors.debug',
-            'django.template.context_processors.request',  # ✅ Required
-            'django.contrib.auth.context_processors.auth',  # ✅ Required
-            'django.contrib.messages.context_processors.messages',  # ✅ Required
+            'django.template.context_processors.request',
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
         ],
     },
 }]
@@ -66,7 +65,6 @@ DATABASES = {
     }
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
 ]
@@ -83,34 +81,26 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'same-origin'
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
 
 # 🍪 Sessions & CSRF (DEV safe)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-CSRF_COOKIE_HTTPONLY = False  # ✅ Required for Angular to read token
+CSRF_COOKIE_HTTPONLY = False  # ✅ Required for Angular
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 # 🌐 CORS (Angular dev server)
 CORS_ALLOWED_ORIGINS = ['http://localhost:4200'] if DEBUG else ['https://your-ngo.org']
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'authorization',
-    'content-type',
-    'x-csrftoken',
-]
+CORS_ALLOW_HEADERS = ['accept', 'authorization', 'content-type', 'x-csrftoken']
 CORS_EXPOSE_HEADERS = ['set-cookie']
 
 # 📡 REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',  # Secure, no JWT
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

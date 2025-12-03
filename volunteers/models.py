@@ -10,6 +10,14 @@ class VolunteerProfile(models.Model):
     experience_years = models.PositiveIntegerField(default=0)
     emergency_contact = models.CharField(max_length=100, blank=True)
 
+
+    contact_preference = models.CharField(
+        max_length=10,
+        choices=[('email', 'Email'), ('sms', 'SMS')],
+        default='email'
+    )
+    is_in_remote_area = models.BooleanField(default=False)
+
     def __str__(self):
         return f"Volunteer: {self.user.email}"
 

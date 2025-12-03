@@ -8,17 +8,14 @@ User = get_user_model()
 
 class SkillMatrixView(APIView):
     def get(self, request):
-        # HR and Super Admin can view
-        if not (request.user.is_super_admin or 
+        if not (getattr(request.user, 'is_super_admin', False) or 
                 getattr(request.user, 'is_hr', False)):
             return Response({'error': 'Access denied'}, status=403)
 
-        # Fetch volunteers with skills
         volunteers = VolunteerProfile.objects.select_related('user').all()
         departments = Department.objects.all()
-
-        # Calculate role-fit scores
         matrix = []
+        
         for v in volunteers:
             scores = {}
             for dept in departments:
@@ -35,23 +32,17 @@ class SkillMatrixView(APIView):
         return Response(matrix)
 
     def calculate_fit_score(self, volunteer, department):
-        """Smart algorithm for role-fit scoring (0-100)"""
         score = 0
-        
-        # Skill match (50% weight)
-        matched_skills = set(volunteer.skills) & set(department.required_skills)
+        # Skill match (50%)
+        matched = set(volunteer.skills) & set(department.required_skills)
         if department.required_skills:
-            skill_score = (len(matched_skills) / len(department.required_skills)) * 50
-            score += skill_score
-        
-        # Department preference match (30% weight)
+            score += (len(matched) / len(department.required_skills)) * 50
+        # Preference match (30%)
         if department.name in volunteer.department_preferences:
             score += 30
-        
-        # Experience (20% weight)
+        # Experience (20%)
         if volunteer.experience_years >= 2:
             score += 20
         elif volunteer.experience_years >= 1:
             score += 10
-        
         return min(round(score, 1), 100)

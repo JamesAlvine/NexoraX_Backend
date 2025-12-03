@@ -1,10 +1,19 @@
+# backend/accounts/urls.py
 from django.urls import path
-from .views import csrf, LoginView, MeView, UserListView, OrganizationView
+from .views import (
+    csrf,           # ✅ Function-based view
+    LoginView,      # ✅ Class-based view
+    MeView,
+    UserListView,
+    OrganizationView,
+    UserCreateView
+)
 
 urlpatterns = [
-    path('auth/csrf/', csrf, name='csrf'),
-    path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/csrf/', csrf, name='csrf'),          # ✅ No .as_view()
+    path('auth/login/', LoginView.as_view(), name='login'),   # ✅ WITH .as_view()
     path('auth/me/', MeView.as_view(), name='me'),
-    path('super/users/', UserListView.as_view(), name='user_list'),
-    path('super/organization/', OrganizationView.as_view(), name='organization'),
+    path('users/', UserListView.as_view(), name='users'),
+    path('organization/', OrganizationView.as_view(), name='organization'),
+    path('users/create/', UserCreateView.as_view(), name='user_create'),
 ]

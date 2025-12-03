@@ -2,12 +2,11 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, login, get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .models import Organization  # ✅ Import your model
+from .models import Organization, App, UserAppAssignment
 
 User = get_user_model()
 
@@ -56,11 +55,10 @@ class UserListView(APIView):
         if not getattr(request.user, 'is_super_admin', False):
             return Response({'error': 'Access denied'}, status=403)
         users = User.objects.only('id', 'email', 'is_super_admin').order_by('email')
-        data = [
+        return Response([
             {'id': u.id, 'email': u.email, 'is_super_admin': u.is_super_admin}
             for u in users
-        ]
-        return Response(data)
+        ])
 
 class OrganizationView(APIView):
     """Get or update organization settings."""
@@ -87,3 +85,44 @@ class OrganizationView(APIView):
                 setattr(org, field, request.data[field])
         org.save()
         return Response({'message': 'Organization updated'})
+
+class UserCreateView(APIView):
+    """Create a new user (Super Admin only)."""
+    def post(self, request):
+        # ✅ Ensure user is authenticated AND super admin
+        if not (request.user.is_authenticated and getattr(request.user, 'is_super_admin', False)):
+            return Response({'error': 'Access denied'}, status=403)
+
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
+        is_super_admin = request.data.get('is_super_admin', False)
+        apps = request.data.get('apps', [])
+
+        if not email or not password:
+            return Response({'error': 'Email and password required'}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'User already exists'}, status=400)
+
+        # Create user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password
+        )
+        user.is_super_admin = is_super_admin
+        user.save()
+
+        # Assign apps
+        for app_name in apps:
+            try:
+                app = App.objects.get(name=app_name)
+                UserAppAssignment.objects.create(user=user, app=app)
+            except App.DoesNotExist:
+                continue
+
+        return Response({
+            'id': user.id,
+            'email': user.email,
+            'is_super_admin': user.is_super_admin
+        }, status=201)
