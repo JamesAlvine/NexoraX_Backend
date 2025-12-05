@@ -20,6 +20,7 @@ class App(models.Model):
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_super_admin = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=True) # ✅ Enforce password change
     is_active = models.BooleanField(default=True)  # ✅ For deactivation
     organization = models.ForeignKey(
         Organization,

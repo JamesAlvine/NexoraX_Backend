@@ -6,16 +6,23 @@ from .views import (
     MeView,
     UserListView,
     OrganizationView,
-    UserCreateView,
-    UserDetailView,  # ✅ Must be imported
+
+    SuperUserCreateView,     # was: UserCreateView
+    UserManageView,          # for edit/delete
+    HrUserCreateView         # for HR create
 )
 
 urlpatterns = [
     path('auth/csrf/', csrf, name='csrf'),
     path('auth/login/', LoginView.as_view(), name='login'),
     path('auth/me/', MeView.as_view(), name='me'),
-    path('users/', UserListView.as_view(), name='users'),
-    path('users/create/', UserCreateView.as_view(), name='user_create'),
-    path('users/<int:user_id>/', UserDetailView.as_view(), name='user-detail'),  # ✅ Now defined
+    
+    # User Management (Super Admin)
+    path('users/', UserListView.as_view(), name='user-list'),
+    path('super/users/create/', SuperUserCreateView.as_view(), name='super-user-create'),
+    path('super/users/<int:user_id>/', UserManageView.as_view(), name='user-manage'),
+    
+    # HR User Creation
+    path('hr/staff/create/', HrUserCreateView.as_view(), name='hr-user-create'),    
     path('organization/', OrganizationView.as_view(), name='organization'),
 ]
