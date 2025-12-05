@@ -1,12 +1,6 @@
 # backend/accounts/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinLengthValidator
-
-
-# ============================
-# CORE MODELS
-# ============================
 
 class Organization(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -17,39 +11,27 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
-
 class App(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
-
-# ============================
-# CUSTOM USER MODEL
-# ============================
-
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_super_admin = models.BooleanField(default=False)
-    # Optional: link to organization
+    is_active = models.BooleanField(default=True)  # ✅ For deactivation
     organization = models.ForeignKey(
         Organization,
         on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
-    
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # Keep for compatibility
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.email
-
-
-# ============================
-# RELATIONAL MODELS
-# ============================
 
 class UserAppAssignment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='app_assignments')
